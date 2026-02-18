@@ -80,11 +80,6 @@ export default function LoginPage() {
                         </button>
                     </div>
                 </form>
-                <div className="text-center">
-                    <Link href="/register" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                        新規登録はこちら
-                    </Link>
-                </div>
             </div>
         </div>
     );

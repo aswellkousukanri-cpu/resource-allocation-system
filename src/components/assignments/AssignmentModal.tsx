@@ -35,6 +35,7 @@ export default function AssignmentModal({
         startDate: "",
         endDate: "",
     });
+    const [confirmDelete, setConfirmDelete] = useState(false);
 
     // For schedule mode
     const [scheduleRows, setScheduleRows] = useState<{ memberId: string, values: { [key: string]: string } }[]>([
@@ -62,8 +63,25 @@ export default function AssignmentModal({
             }
 
             // Pre-populate scheduleRows if editing
-            if (initialData.memberId) {
-                setScheduleRows([{ memberId: initialData.memberId, values: { [`${initialData.year}-${initialData.month}`]: String(initialData.manMonth || "") } }]);
+            if (initialData.memberId && initialData.projectId) {
+                const targetProject = projects.find(p => p.id === initialData.projectId) as any;
+                const memberAssignments = targetProject?.assignments?.filter((a: any) => a.memberId === initialData.memberId) || [];
+
+                const values: { [key: string]: string } = {};
+                // First, fill existing assignments from the project data
+                memberAssignments.forEach((a: any) => {
+                    values[`${a.year}-${a.month}`] = String(a.manMonth);
+                });
+
+                // Ensure the specifically clicked cell's data is also there (though it should be in memberAssignments)
+                if (initialData.year && initialData.month) {
+                    const key = `${initialData.year}-${initialData.month}`;
+                    if (!values[key]) {
+                        values[key] = String(initialData.manMonth || "");
+                    }
+                }
+
+                setScheduleRows([{ memberId: initialData.memberId, values }]);
             }
         }
     }, [initialData, projects]);
@@ -144,6 +162,40 @@ export default function AssignmentModal({
         const newRows = [...scheduleRows];
         newRows[rowIndex].values[monthKey] = value;
         setScheduleRows(newRows);
+    };
+
+    const handleDelete = async () => {
+        if (!formData.memberId || !formData.projectId) return;
+        setLoading(true);
+
+        try {
+            // Find all assignments for this member and project that fall within the monthsRange
+            const targetProject = projects.find(p => p.id === formData.projectId) as any;
+            const assignmentsInProject = targetProject?.assignments || [];
+            const toDelete = assignmentsInProject.filter((a: any) =>
+                a.memberId === formData.memberId &&
+                monthsRange.some(m => m.year === a.year && m.month === a.month)
+            );
+
+            if (toDelete.length === 0) {
+                alert("削除対象のアサインはありません");
+                setLoading(false);
+                setConfirmDelete(false);
+                return;
+            }
+
+            await Promise.all(toDelete.map((a: any) =>
+                fetch(`/api/assignments/${a.id}`, { method: "DELETE" })
+            ));
+
+            onSuccess();
+        } catch (error) {
+            console.error("Failed to delete assignments", error);
+            alert("削除に失敗しました");
+        } finally {
+            setLoading(false);
+            setConfirmDelete(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -316,14 +368,48 @@ export default function AssignmentModal({
                         )}
                     </div>
 
-                    <div className="mt-10 flex justify-end gap-4 border-t pt-8">
+                    <div className="mt-10 flex justify-end items-center gap-4 border-t pt-8">
+                        {isEditing && (
+                            <div className="mr-auto flex items-center gap-2">
+                                {confirmDelete ? (
+                                    <Button
+                                        type="button"
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={handleDelete}
+                                        className="bg-red-600 font-bold"
+                                    >
+                                        本当に削除しますか？ (再度クリック)
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setConfirmDelete(true)}
+                                        className="text-red-600 border-red-200 hover:bg-red-50"
+                                    >
+                                        <Trash2 size={14} className="mr-1.5" /> 表示期間内のアサインを削除
+                                    </Button>
+                                )}
+                                {confirmDelete && (
+                                    <button
+                                        type="button"
+                                        className="text-[10px] font-bold text-gray-400 hover:text-gray-600 underline"
+                                        onClick={() => setConfirmDelete(false)}
+                                    >
+                                        キャンセル
+                                    </button>
+                                )}
+                            </div>
+                        )}
                         <Button
                             variant="outline"
                             type="button"
                             onClick={onClose}
                             className="bg-white px-8 py-2.5 font-bold text-gray-700 hover:bg-gray-50"
                         >
-                            キャンセル
+                            閉じる
                         </Button>
                         <Button
                             type="submit"

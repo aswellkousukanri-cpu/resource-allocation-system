@@ -18,6 +18,7 @@ export async function GET(req: Request) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const includeEnded = searchParams.get("includeEnded") === "true";
+    const memberIds = searchParams.get("memberId")?.split(",").filter(id => id.length > 0) || [];
 
     const where: any = {};
 
@@ -45,6 +46,23 @@ export async function GET(req: Request) {
     if (startDate || endDate) {
         if (startDate) where.startDate = { gte: new Date(startDate) };
         if (endDate) where.endDate = { lte: new Date(endDate) };
+    }
+
+    if (memberIds.length > 0) {
+        // AND match: The project must have assignments for ALL of the specified memberIds
+        const memberFilters = memberIds.map(id => ({
+            assignments: {
+                some: {
+                    memberId: id
+                }
+            }
+        }));
+
+        if (where.AND) {
+            where.AND = [...where.AND, ...memberFilters];
+        } else {
+            where.AND = memberFilters;
+        }
     }
 
     // Default: only show projects that haven't ended yet

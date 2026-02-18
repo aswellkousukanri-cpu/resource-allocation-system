@@ -25,7 +25,7 @@ interface MemberSummary {
 export default function FiscalYearSummaryPage() {
     const [fiscalYear, setFiscalYear] = useState(new Date().getMonth() >= 9 ? new Date().getFullYear() : new Date().getFullYear() - 1);
     const [data, setData] = useState<{ members: MemberSummary[], months: { year: number, month: number }[] } | null>(null);
-    const [includeProspective, setIncludeProspective] = useState(false);
+    const [includeProspective, setIncludeProspective] = useState(true);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {

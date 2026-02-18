@@ -180,7 +180,33 @@ export default function ProjectForm({ initialData }: ProjectFormProps) {
                             required
                             className="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 sm:text-sm"
                             value={formData.type}
-                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            onChange={(e) => {
+                                const newType = e.target.value;
+                                let newDates = {};
+
+                                // 「管理」または「その他」の場合、工期を今季・来期（10/1〜翌々年9/30）に自動設定
+                                if (newType === "管理" || newType === "その他") {
+                                    const today = new Date();
+                                    const month = today.getMonth();
+                                    const year = today.getFullYear();
+                                    let startYear, endYear;
+
+                                    if (month >= 9) { // 10, 11, 12月
+                                        startYear = year;
+                                        endYear = year + 2;
+                                    } else { // 1-9月
+                                        startYear = year - 1;
+                                        endYear = year + 1;
+                                    }
+
+                                    newDates = {
+                                        startDate: `${startYear}-10-01`,
+                                        endDate: `${endYear}-09-30`
+                                    };
+                                }
+
+                                setFormData({ ...formData, type: newType, ...newDates });
+                            }}
                         >
                             <option value="開発">開発</option>
                             <option value="保守">保守</option>
@@ -230,9 +256,10 @@ export default function ProjectForm({ initialData }: ProjectFormProps) {
                         <Input
                             id="startDate"
                             type="date"
-                            className="mt-1"
+                            className={`mt-1 ${(formData.type === "管理" || formData.type === "その他") ? "bg-gray-100 cursor-not-allowed" : ""}`}
                             value={formData.startDate}
                             onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                            readOnly={formData.type === "管理" || formData.type === "その他"}
                         />
                     </div>
                     <div>
@@ -240,11 +267,17 @@ export default function ProjectForm({ initialData }: ProjectFormProps) {
                         <Input
                             id="endDate"
                             type="date"
-                            className="mt-1"
+                            className={`mt-1 ${(formData.type === "管理" || formData.type === "その他") ? "bg-gray-100 cursor-not-allowed" : ""}`}
                             value={formData.endDate}
                             onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                            readOnly={formData.type === "管理" || formData.type === "その他"}
                         />
                     </div>
+                    {(formData.type === "管理" || formData.type === "その他") && (
+                        <p className="col-span-2 text-xs text-indigo-600 font-medium">
+                            ※ {formData.type}案件は、自動的に今季と来期（10/1〜翌々年9/30）の期間に設定されます。
+                        </p>
+                    )}
                 </div>
 
                 {/* Monthly Budget Settings for Maintenance */}

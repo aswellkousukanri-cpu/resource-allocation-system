@@ -10,8 +10,10 @@ import {
     PieChart,
     ChevronLeft,
     ChevronRight,
-    LucideIcon
+    LucideIcon,
+    Settings
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface NavItemProps {
     href: string;
@@ -49,6 +51,8 @@ interface SidebarProps {
 export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
     const pathname = usePathname();
 
+    const { data: session } = useSession();
+
     const navItems = [
         { href: "/dashboard", label: "ダッシュボード", icon: LayoutDashboard },
         { href: "/summary", label: "サマリー", icon: PieChart },
@@ -56,6 +60,11 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         { href: "/projects", label: "案件管理", icon: Briefcase },
         { href: "/members", label: "メンバー管理", icon: Users },
     ];
+
+    // 管理者のみ表示する項目
+    if (session?.user?.role === "ADMIN") {
+        navItems.push({ href: "/settings/users", label: "ユーザー管理", icon: Settings });
+    }
 
     return (
         <aside

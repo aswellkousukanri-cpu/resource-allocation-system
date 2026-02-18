@@ -9,7 +9,12 @@ declare module "next-auth" {
     interface Session {
         user: {
             id: string;
+            role: string;
         } & DefaultSession["user"]
+    }
+
+    interface User {
+        role: string;
     }
 }
 
@@ -48,6 +53,7 @@ export const authOptions: NextAuthOptions = {
                     id: user.id,
                     email: user.email,
                     name: user.name,
+                    role: user.role,
                 };
             },
         }),
@@ -59,9 +65,16 @@ export const authOptions: NextAuthOptions = {
         signIn: "/login",
     },
     callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.role = user.role;
+            }
+            return token;
+        },
         async session({ session, token }) {
-            if (token && session.user && token.sub) {
-                session.user.id = token.sub;
+            if (token && session.user) {
+                session.user.id = token.sub as string;
+                session.user.role = token.role as string;
             }
             return session;
         },

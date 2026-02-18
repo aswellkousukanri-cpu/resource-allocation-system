@@ -14,6 +14,7 @@ export interface Project {
     id: string;
     name: string;
     type: "開発" | "保守" | "管理" | "その他";
+    status: "CONFIRMED" | "PROSPECTIVE";
     description?: string | null;
     budget?: number | null;
     startDate?: Date | null;
