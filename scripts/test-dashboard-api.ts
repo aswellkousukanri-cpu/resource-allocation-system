@@ -95,7 +95,7 @@ async function test() {
             include: { member: true }
         });
 
-        const grouping = {};
+        const grouping: Record<string, any> = {};
 
         allAssignmentsWithMembers.forEach(a => {
             if (!a.member) {
