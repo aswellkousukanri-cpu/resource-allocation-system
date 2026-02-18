@@ -164,13 +164,16 @@ export default function MemberDetailPage() {
                                 {months.map((m, midx) => {
                                     const total = projectSchedules.reduce((sum, ps) => sum + ps.values[midx], 0);
                                     const rate = total / member.workCapacity;
-                                    const isOver = rate > 1.0;
+                                    const percent = Math.round(rate * 100);
+                                    const isOver = percent > 100;
+                                    const isExact = percent === 100;
+
                                     return (
-                                        <td key={midx} className={`px-3 py-4 text-center border-r ${isOver ? 'bg-red-50' : ''}`}>
-                                            <div className={`text-sm ${isOver ? 'text-red-600' : 'text-gray-900'}`}>
-                                                {(rate * 100).toFixed(0)}%
+                                        <td key={midx} className={`px-3 py-4 text-center border-r ${isOver ? 'bg-red-50' : isExact ? 'bg-emerald-50' : ''}`}>
+                                            <div className={`text-sm font-bold ${isOver ? 'text-red-600' : isExact ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                                {percent}%
                                             </div>
-                                            <div className={`text-[10px] ${isOver ? 'text-red-400' : 'text-gray-500'}`}>
+                                            <div className={`text-[10px] ${isOver ? 'text-red-400' : isExact ? 'text-emerald-400' : 'text-gray-500'}`}>
                                                 {total.toFixed(1)} / {member.workCapacity.toFixed(1)}
                                             </div>
                                         </td>

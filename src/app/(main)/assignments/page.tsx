@@ -302,9 +302,16 @@ export default function AssignmentsPage() {
                                                                     {a ? (
                                                                         <div className="flex flex-col items-center">
                                                                             <span className="text-sm font-black text-gray-900 leading-none mb-1">{a.manMonth.toFixed(1)}</span>
-                                                                            <span className={`text-[9px] font-bold leading-none ${Math.round((a.manMonth / member.workCapacity) * 100) > 100 ? 'text-red-500' : 'text-gray-400'}`}>
-                                                                                {((a.manMonth / member.workCapacity) * 100).toFixed(0)}%
-                                                                            </span>
+                                                                            {(() => {
+                                                                                const percent = Math.round((a.manMonth / member.workCapacity) * 100);
+                                                                                const isOver = percent > 100;
+                                                                                const isExact = percent === 100;
+                                                                                return (
+                                                                                    <span className={`text-[9px] font-bold leading-none ${isOver ? 'text-red-500' : isExact ? 'text-emerald-500' : 'text-gray-400'}`}>
+                                                                                        {percent}%
+                                                                                    </span>
+                                                                                );
+                                                                            })()}
                                                                         </div>
                                                                     ) : (
                                                                         <span className="text-gray-200 font-black text-xs">-</span>
@@ -322,10 +329,10 @@ export default function AssignmentsPage() {
                                                 {totals.map(t => {
                                                     const rate = t.total / member.workCapacity;
                                                     return (
-                                                        <td key={t.key} className={`px-2 py-4 text-center border-r border-gray-100 ${Math.round(rate * 100) > 100 ? 'bg-red-50/30' : ''}`}>
-                                                            <div className={`text-xs ${Math.round(rate * 100) > 100 ? 'text-red-600' : 'text-gray-900'}`}>
+                                                        <td key={t.key} className={`px-2 py-4 text-center border-r border-gray-100 ${Math.round(rate * 100) > 100 ? 'bg-red-50/30' : Math.round(rate * 100) === 100 ? 'bg-emerald-50/30' : ''}`}>
+                                                            <div className={`text-xs ${Math.round(rate * 100) > 100 ? 'text-red-600' : Math.round(rate * 100) === 100 ? 'text-emerald-600' : 'text-gray-900'}`}>
                                                                 <span className="block text-[10px] font-black">{t.total.toFixed(1)}</span>
-                                                                {(rate * 100).toFixed(0)}%
+                                                                {Math.round(rate * 100)}%
                                                             </div>
                                                         </td>
                                                     );

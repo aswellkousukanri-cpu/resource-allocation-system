@@ -61,7 +61,9 @@ function SortableMemberRow({ m }: SortableRowProps) {
     const prospectiveTotal = totalManMonth - confirmedTotal;
 
     const rate = totalManMonth / m.workCapacity;
-    const isOver = rate > 1.0;
+    const percent = Math.round(rate * 100);
+    const isOver = percent > 100;
+    const isExact = percent === 100;
 
     return (
         <tr
@@ -126,15 +128,16 @@ function SortableMemberRow({ m }: SortableRowProps) {
                 <div className="flex flex-col items-end gap-1.5">
                     <div className="flex items-center gap-2">
                         {isOver && <span className="flex h-2 w-2 animate-pulse rounded-full bg-red-500" />}
-                        <span className={`text-base font-black ${isOver ? 'text-red-600' : 'text-gray-900'}`}>
-                            {(rate * 100).toFixed(0)}%
+                        {isExact && <span className="flex h-2 w-2 rounded-full bg-emerald-500" />}
+                        <span className={`text-base font-black ${isOver ? 'text-red-600' : isExact ? 'text-emerald-600' : 'text-gray-900'}`}>
+                            {percent}%
                         </span>
                     </div>
                     {/* Progress bar */}
                     <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                            className={`h-full transition-all duration-500 ${isOver ? 'bg-red-500' : 'bg-indigo-500'}`}
-                            style={{ width: `${Math.min(rate * 100, 100)}%` }}
+                            className={`h-full transition-all duration-500 ${isOver ? 'bg-red-500' : isExact ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                            style={{ width: `${Math.min(percent, 100)}%` }}
                         />
                     </div>
                 </div>
